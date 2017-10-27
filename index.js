@@ -158,5 +158,5 @@ if (getEmitter.isStar) {
         .emit('slide.text')
         .emit('slide.text')
         .emit('slide.funny');
-    // Sam(80,70); Bill(70,53)
+// Sam(80,70); Bill(70,53)
 }
