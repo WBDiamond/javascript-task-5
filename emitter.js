@@ -27,22 +27,20 @@ function getEmitter() {
          */
         on: function (event, context, handler) {
             context[event] = handler;
-            const leaf = event.split('.').reduce((acc, subEvent) => {
-                if (!acc.children.hasOwnProperty(subEvent)) {
-                    acc.children[subEvent] = {
+            event.split('.').reduce((acc, subEvent) => {
+                acc.nameSpaces.push(subEvent);
+                if (!acc.tree.children.hasOwnProperty(subEvent)) {
+                    acc.tree.children[subEvent] = {
                         subscribers: [],
-                        parentNameSpace: acc,
-                        currentNameSpace: event,
+                        parentNameSpace: acc.tree,
+                        currentNameSpace: acc.nameSpaces.join('.'),
                         children: {}
                     };
                 }
-                acc = acc.children[subEvent];
+                acc.tree = acc.tree.children[subEvent];
 
                 return acc;
-            }, eventsTree);
-            if (!leaf.subscribers.includes(context)) {
-                leaf.subscribers.push(context);
-            }
+            }, { tree: eventsTree, nameSpaces: [] }).tree.subscribers.push(context);
 
             return this;
         },
@@ -62,7 +60,9 @@ function getEmitter() {
                     childQueue.push(child.children[key]);
                 }
                 const tempIndex = child.subscribers.indexOf(context);
-                delete child.subscribers.splice(tempIndex, 1)[0][child.currentNameSpace];
+                if (child.subscribers.length > 0) {
+                    delete child.subscribers.splice(tempIndex, 1)[0][child.currentNameSpace];
+                }
             }
 
             return this;
