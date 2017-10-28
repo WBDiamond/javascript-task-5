@@ -28,7 +28,9 @@ var lecturer = getEmitter();
 lecturer
     .on('begin', students.Sam, function () {
         this.focus += 10;
+        this.rot = 0;
     })
+
     .on('begin', students.Sally, function () {
         this.focus += 10;
     })
@@ -69,12 +71,16 @@ lecturer
         this.focus += 5;
         this.wisdom -= 5;
     })
+    .on('begin', students.Bill, function () {
+        this.focus += 10;
+        this.wisdom += 5;
+    })
     .on('slide.funny', students.Bill, function () {
         this.focus += 5;
         this.wisdom -= 10;
     })
     .on('slide.funny', students.Sharon, function () {
-        this.focus += 10;
+        this.focus += 5;
         this.wisdom -= 10;
     });
 
@@ -83,6 +89,7 @@ lecturer.emit('begin');
 // Sam(110,50); Sally(110,60); Bill(100,55); Sharon(130,40)
 
 lecturer
+    .off('slide.funny', students.Sharon)
     .emit('slide.text')
     .emit('slide.text')
     .emit('slide.text')
