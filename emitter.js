@@ -12,7 +12,7 @@ module.exports = getEmitter;
  * @returns {Object}
  */
 function getEmitter() {
-    let events = {
+    let eventsTree = {
         currentNameSpace: 'root',
         children: {}
     };
@@ -40,7 +40,7 @@ function getEmitter() {
                 acc = acc.children[subEvent];
 
                 return acc;
-            }, events).subscribers.push(context);
+            }, eventsTree).subscribers.push(context);
 
             return this;
         },
@@ -52,17 +52,15 @@ function getEmitter() {
          * @returns {off}
          */
         off: function (event, context) {
-
-            const levelContext = getLevelContext(event, events);
-            const index = levelContext.subscribers.indexOf(context);
-            const childQueue = [].push(levelContext.subscribers.splice(index, 1));
+            const childQueue = [];
+            childQueue.push(getLevelContext(event, eventsTree));
             while (childQueue.length > 0) {
                 const child = childQueue.pop();
                 for (let key of Object.keys(child.children)) {
                     childQueue.push(child.children[key]);
                 }
                 const tempIndex = child.subscribers.indexOf(context);
-                child.subscribers.splice(tempIndex, 1);
+                delete child.subscribers.splice(tempIndex, 1)[event];
             }
 
             return this;
@@ -74,9 +72,9 @@ function getEmitter() {
          * @returns {emit}
          */
         emit: function (event) {
-            let levelContext = getLevelContext(event, events);
+            let levelContext = getLevelContext(event, eventsTree);
             while (levelContext.currentNameSpace !== 'root') {
-                if (executeSubs(levelContext, event)) {
+                if (executeEvent(levelContext, event)) {
                     levelContext = levelContext.parentNameSpace;
                 }
                 event = event.split('.')
@@ -98,7 +96,7 @@ function getEmitter() {
          */
         // several: function (event, context, handler, times) {
         //     // console.info(event, context, handler, times);
-        //     let levelContext = getLevelContext(event, events);
+        //     let levelContext = getLevelContext(event, eventsTree);
         //
         //
         //     return this;
@@ -121,7 +119,7 @@ function getEmitter() {
     };
 }
 
-function executeSubs(levelContext, event) {
+function executeEvent(levelContext, event) {
     let eventExists = false;
     levelContext.subscribers.forEach(sub => {
         if (sub.hasOwnProperty(event)) {
