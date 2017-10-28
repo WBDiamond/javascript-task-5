@@ -26,7 +26,6 @@ function getEmitter() {
          * @returns {on}
          */
         on: function (event, context, handler) {
-            context[event] = handler;
             event.split('.').reduce((acc, subEvent) => {
                 acc.nameSpaces.push(subEvent);
                 if (!acc.tree.children.hasOwnProperty(subEvent)) {
@@ -40,7 +39,7 @@ function getEmitter() {
                 acc.tree = acc.tree.children[subEvent];
 
                 return acc;
-            }, { tree: eventsTree, nameSpaces: [] }).tree.subscribers.push(context);
+            }, { tree: eventsTree, nameSpaces: [] }).tree.subscribers.push({ context, handler });
 
             return this;
         },
@@ -74,7 +73,8 @@ function getEmitter() {
             let levelContext = getLevelContext(event, eventsTree);
             const len = event.split('.').length;
             for (let i = 0; i < len; i++) {
-                if (executeEvent(levelContext, event)) {
+                if (levelContext.currentNameSpace === event) {
+                    executeEvent(levelContext);
                     levelContext = levelContext.parentNameSpace;
                 }
                 event = event.split('.')
@@ -119,19 +119,13 @@ function getEmitter() {
     };
 }
 
-function executeEvent(levelContext, event) {
-    let eventExists = false;
+function executeEvent(levelContext) {
     if (levelContext.hasOwnProperty('subscribers')) {
         levelContext.subscribers.forEach(sub => {
-            if (sub.hasOwnProperty(event)) {
-                // if ()
-                sub[event]();
-                eventExists = true;
-            }
+            sub.handler.call(sub.context);
         });
     }
 
-    return eventExists;
 }
 
 function getLevelContext(event, events) {
@@ -145,11 +139,9 @@ function getLevelContext(event, events) {
 }
 
 function deleteEntries(child, context) {
-    const len = child.subscribers.length;
-    for (let i = 0; i < len; i++) {
-        const tempIndex = child.subscribers.indexOf(context);
-        if (tempIndex !== -1) {
-            delete child.subscribers.splice(tempIndex, 1)[0][child.currentNameSpace];
+    for (let i = 0; i < child.subscribers.length; i++) {
+        if (child.subscribers[i].context === context) {
+            child.subscribers.splice(i, 1);
         }
     }
 }
