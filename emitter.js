@@ -13,7 +13,6 @@ module.exports = getEmitter;
  */
 function getEmitter() {
     let eventsTree = {
-        currentNameSpace: 'root',
         children: {}
     };
 
@@ -33,7 +32,7 @@ function getEmitter() {
                     acc.children[subEvent] = {
                         subscribers: [],
                         parentNameSpace: acc,
-                        currentNameSpace: subEvent,
+                        currentNameSpace: event,
                         children: {}
                     };
                 }
@@ -60,7 +59,7 @@ function getEmitter() {
                     childQueue.push(child.children[key]);
                 }
                 const tempIndex = child.subscribers.indexOf(context);
-                delete child.subscribers.splice(tempIndex, 1)[event];
+                delete child.subscribers.splice(tempIndex, 1)[0][child.currentNameSpace];
             }
 
             return this;
@@ -73,7 +72,7 @@ function getEmitter() {
          */
         emit: function (event) {
             let levelContext = getLevelContext(event, eventsTree);
-            let len = event.split('.').length;
+            const len = event.split('.').length;
             for (let i = 0; i < len; i++) {
                 if (executeEvent(levelContext, event)) {
                     levelContext = levelContext.parentNameSpace;
