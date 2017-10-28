@@ -27,7 +27,7 @@ function getEmitter() {
          */
         on: function (event, context, handler) {
             context[event] = handler;
-            event.split('.').reduce((acc, subEvent) => {
+            const leaf = event.split('.').reduce((acc, subEvent) => {
                 if (!acc.children.hasOwnProperty(subEvent)) {
                     acc.children[subEvent] = {
                         subscribers: [],
@@ -39,7 +39,10 @@ function getEmitter() {
                 acc = acc.children[subEvent];
 
                 return acc;
-            }, eventsTree).subscribers.push(context);
+            }, eventsTree);
+            if (!leaf.subscribers.includes(context)) {
+                leaf.subscribers.push(context);
+            }
 
             return this;
         },
