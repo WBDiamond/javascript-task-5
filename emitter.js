@@ -73,7 +73,8 @@ function getEmitter() {
          */
         emit: function (event) {
             let levelContext = getLevelContext(event, eventsTree);
-            while (levelContext.currentNameSpace !== 'root') {
+            let len = event.split('.').length;
+            for (let i = 0; i < len; i++) {
                 if (executeEvent(levelContext, event)) {
                     levelContext = levelContext.parentNameSpace;
                 }
@@ -121,13 +122,15 @@ function getEmitter() {
 
 function executeEvent(levelContext, event) {
     let eventExists = false;
-    levelContext.subscribers.forEach(sub => {
-        if (sub.hasOwnProperty(event)) {
-            // if ()
-            sub[event]();
-            eventExists = true;
-        }
-    });
+    if (levelContext.hasOwnProperty('subscribers')) {
+        levelContext.subscribers.forEach(sub => {
+            if (sub.hasOwnProperty(event)) {
+                // if ()
+                sub[event]();
+                eventExists = true;
+            }
+        });
+    }
 
     return eventExists;
 }
