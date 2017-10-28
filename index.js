@@ -57,6 +57,10 @@ lecturer
     .on('slide', students.Sharon, function () {
         this.wisdom += Math.round(this.focus * 0.01);
         this.focus -= 5;
+    })
+    .on('privet.slide', students.Sharon, function () {
+        this.wisdom += Math.round(this.focus * 0.01);
+        this.focus -= 5;
     });
 
 // На каждый веселый слайд всё наоборот
@@ -69,8 +73,16 @@ lecturer
         this.focus += 5;
         this.wisdom -= 5;
     })
-    .on('slide.funny.veryFunny.woah', students.Bill, function () {
-        this.focus += 5;
+    .on('slide.funny', students.Sharon, function () {
+        this.focus += 10;
+        this.wisdom -= 10;
+    })
+    .on('slide.funny', students.Sharon, function () {
+        this.focus += 10;
+        this.wisdom -= 10;
+    })
+    .on('slide.funny', students.Sharon, function () {
+        this.focus += 10;
         this.wisdom -= 10;
     })
     .on('slide.funny', students.Sharon, function () {
@@ -83,6 +95,7 @@ lecturer.emit('begin');
 // Sam(110,50); Sally(110,60); Bill(100,55); Sharon(130,40)
 
 lecturer
+    .emit('slide.funny.veryFunny.woah')
     .emit('slide.text')
     .emit('slide.text')
     .emit('slide.text')
@@ -104,6 +117,7 @@ lecturer
 
 lecturer.emit('end');
 // Sam(20,102); Sally(70,191); Bill(40,62); Sharon(90,40)
+
 
 if (getEmitter.isStar) {
     students = {
@@ -158,5 +172,7 @@ if (getEmitter.isStar) {
         .emit('slide.text')
         .emit('slide.text')
         .emit('slide.funny');
+
+
 // Sam(80,70); Bill(70,53)
 }

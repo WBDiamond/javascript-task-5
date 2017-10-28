@@ -59,10 +59,7 @@ function getEmitter() {
                 for (let key of Object.keys(child.children)) {
                     childQueue.push(child.children[key]);
                 }
-                const tempIndex = child.subscribers.indexOf(context);
-                if (child.subscribers.length > 0) {
-                    delete child.subscribers.splice(tempIndex, 1)[0][child.currentNameSpace];
-                }
+                deleteEntries(child, context);
             }
 
             return this;
@@ -145,4 +142,14 @@ function getLevelContext(event, events) {
 
         return acc;
     }, events);
+}
+
+function deleteEntries(child, context) {
+    const len = child.subscribers.length;
+    for (let i = 0; i < len; i++) {
+        const tempIndex = child.subscribers.indexOf(context);
+        if (tempIndex !== -1) {
+            delete child.subscribers.splice(tempIndex, 1)[0][child.currentNameSpace];
+        }
+    }
 }
