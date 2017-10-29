@@ -27,10 +27,10 @@ function getEmitter() {
          * @returns {on}
          */
         on: function (event, context, handler) {
-            if (!events.hasOwnProperty(event + '.')) {
-                events[event + '.'] = [];
+            if (!events.hasOwnProperty(event)) {
+                events[event] = [];
             }
-            events[event + '.'].push({ context, handler });
+            events[event].push({ context, handler });
             // event.split('.').reduce((acc, subEvent) => {
             //     acc.nameSpaces.push(subEvent);
             //     if (!acc.tree.children.hasOwnProperty(subEvent)) {
@@ -56,7 +56,7 @@ function getEmitter() {
          * @returns {off}
          */
         off: function (event, context) {
-            Object.keys(events).filter(key => (key).startsWith(event + '.'))
+            Object.keys(events).filter(key => (key + '.').startsWith(event + '.'))
                 .forEach(key => {
                     events[key].forEach((sub, i, arr) => {
                         if (sub.context === context) {
@@ -85,8 +85,8 @@ function getEmitter() {
         emit: function (event) {
             const len1 = event.split('.').length;
             for (let i = 0; i < len1; i++) {
-                if (events.hasOwnProperty(event + '.')) {
-                    execute(events[event + '.']);
+                if (events.hasOwnProperty(event)) {
+                    execute(events[event]);
                 }
                 event = event.split('.')
                     .slice(0, -1)
@@ -105,7 +105,7 @@ function getEmitter() {
             // }
 
             return this;
-        }
+        },
 
         /**
          * Подписаться на событие с ограничением по количеству полученных уведомлений
@@ -116,13 +116,11 @@ function getEmitter() {
          * @param {Number} times – сколько раз получить уведомление
          * @returns {several}
          */
-        // several: function (event, context, handler, times) {
-        //     // console.info(event, context, handler, times);
-        //     let levelContext = getLevelContext(event, eventsTree);
-        //
-        //
-        //     return this;
-        // },
+        several: function (event, context, handler, times) {
+            this.on(event, context, () => times-- > 0 ? handler.call(context) : null);
+
+            return this;
+        },
 
         /**
          * Подписаться на событие с ограничением по частоте получения уведомлений
@@ -133,11 +131,12 @@ function getEmitter() {
          * @param {Number} frequency – как часто уведомлять
          * @returns {through}
          */
-        // through: function (event, context, handler, frequency) {
-        //     // console.info(event, context, handler, frequency);
-        //
-        //     return this;
-        // }
+        through: function (event, context, handler, frequency) {
+            let times = 0;
+            this.on(event, context, () => times++ % frequency === 0 ? handler.call(context) : null);
+
+            return this;
+        }
     };
 }
 
