@@ -112,6 +112,15 @@ lecturer
 lecturer.emit('end');
 // Sam(20,102); Sally(70,191); Bill(40,62); Sharon(90,40)
 
+let lecturer1 = getEmitter();
+
+lecturer1.on('begin', null, function () {
+    this.focus += 5;
+    this.wisdom -= 5;
+});
+
+lecturer1.emit('slide');
+
 if (getEmitter.isStar) {
     students = {
         Sam: {
