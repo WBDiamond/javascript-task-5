@@ -75,7 +75,7 @@ lecturer
         this.focus += 10;
         this.wisdom += 5;
     })
-    .on('slide.funny', students.Bill, function () {
+    .on('slide.funny', null, function () {
         this.focus += 5;
         this.wisdom -= 10;
     })

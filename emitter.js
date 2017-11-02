@@ -39,22 +39,12 @@ function getEmitter() {
          * @returns {off}
          */
         off: function (event, context) {
-            Object.keys(events).filter(eventFilter)
-                .forEach(unsub);
+            Object.keys(events).filter(action => (action + '.').startsWith(event + '.'))
+                .forEach(key => {
+                    events[key] = events[key].filter(person => context !== person.context);
+                });
 
             return this;
-
-            function eventFilter(action) {
-                return (action + '.').startsWith(event + '.');
-            }
-
-            function unsub(action) {
-                events[action].forEach((subscriber, i) => {
-                    if (subscriber.context === context) {
-                        events[action].splice(i, 1);
-                    }
-                });
-            }
         },
 
         /**
