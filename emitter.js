@@ -80,8 +80,11 @@ function getEmitter() {
          * @returns {Object}
          */
         several: function (event, context, handler, times) {
-            this.on(event, context, times > 0
-                ? () => times-- > 0 ? handler.call(context) : null : handler);
+            if (times > 0) {
+                this.on(event, context, () => times-- > 0 ? handler.call(context) : null);
+            } else {
+                this.on(event, context, handler);
+            }
 
             return this;
         },
@@ -97,8 +100,12 @@ function getEmitter() {
          */
         through: function (event, context, handler, frequency) {
             let times = 0;
-            this.on(event, context, frequency > 0
-                ? () => times++ % frequency === 0 ? handler.call(context) : null : handler);
+            if (frequency > 0) {
+                this.on(event, context, () => times++ % frequency === 0 ? handler.call(context)
+                    : null);
+            } else {
+                this.on(event, context, handler);
+            }
 
             return this;
         }
