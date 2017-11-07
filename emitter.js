@@ -14,6 +14,10 @@ module.exports = getEmitter;
 function getEmitter() {
     let events = {};
 
+    function execute(event) {
+        event.forEach(sub => sub.handler.call(sub.context));
+    }
+
     return {
 
         /**
@@ -21,10 +25,10 @@ function getEmitter() {
          * @param {String} event
          * @param {Object} context
          * @param {Function} handler
-         * @returns {on}
+         * @returns {Object}
          */
         on: function (event, context, handler) {
-            if (!events.hasOwnProperty(event)) {
+            if (!Reflect.has(events, event)) {
                 events[event] = [];
             }
             events[event].push({ context, handler });
@@ -36,10 +40,11 @@ function getEmitter() {
          * Отписаться от события
          * @param {String} event
          * @param {Object} context
-         * @returns {off}
+         * @returns {Object}
          */
         off: function (event, context) {
-            Object.keys(events).filter(action => (action + '.').startsWith(event + '.'))
+            Object.keys(events)
+                .filter(action => (action + '.').startsWith(event + '.'))
                 .forEach(key => {
                     events[key] = events[key].filter(person => context !== person.context);
                 });
@@ -50,15 +55,16 @@ function getEmitter() {
         /**
          * Уведомить о событии
          * @param {String} event
-         * @returns {emit}
+         * @returns {Object}
          */
         emit: function (event) {
             const len = event.split('.').length;
+            let tempEvent = event;
             for (let i = 0; i < len; i++) {
-                if (events.hasOwnProperty(event)) {
-                    execute(events[event]);
+                if (Reflect.has(events, tempEvent)) {
+                    execute(events[tempEvent]);
                 }
-                event = event.substring(event.lastIndexOf('.'), -1);
+                tempEvent = tempEvent.substring(tempEvent.lastIndexOf('.'), -1);
             }
 
             return this;
@@ -71,10 +77,11 @@ function getEmitter() {
          * @param {Object} context
          * @param {Function} handler
          * @param {Number} times – сколько раз получить уведомление
-         * @returns {several}
+         * @returns {Object}
          */
         several: function (event, context, handler, times) {
-            this.on(event, context, () => times-- > 0 ? handler.call(context) : null);
+            this.on(event, context, times > 0
+                ? () => times-- > 0 ? handler.call(context) : null : handler);
 
             return this;
         },
@@ -86,18 +93,15 @@ function getEmitter() {
          * @param {Object} context
          * @param {Function} handler
          * @param {Number} frequency – как часто уведомлять
-         * @returns {through}
+         * @returns {Object}
          */
         through: function (event, context, handler, frequency) {
             let times = 0;
-            this.on(event, context, () => times++ % frequency === 0 ? handler.call(context) : null);
+            this.on(event, context, frequency > 0
+                ? () => times++ % frequency === 0 ? handler.call(context) : null : handler);
 
             return this;
         }
     };
-}
-
-function execute(event) {
-    event.forEach(sub => sub.handler.call(sub.context));
 }
 
